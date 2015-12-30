@@ -2,6 +2,6 @@
   "name": "ora-whiteboard",
   "version": "0.0.1",
   "dependencies": {
-    "ora-to-image": "^1.1.0"
+    "ora-to-image": "^1.2.0"
   }
 }
