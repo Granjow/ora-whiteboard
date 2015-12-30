@@ -102,8 +102,14 @@ ObserverEmitter.prototype = {
     watchedFiles: function () {
         return this._watched.map( ( desc ) => path.basename( desc.png ) );
     },
+    watchedFilesDetails: function () {
+        return this._watched.map( ( desc ) => ({
+            name: path.basename( desc.png ),
+            rev: desc.rev
+        }) );
+    },
     addWatched: function ( ora, png ) {
-        this._watched.push( { ora: ora, png: png } );
+        this._watched.push( { ora: ora, png: png, rev: 0 } );
     },
     isWatched: function ( ora ) {
         return this._watched.some( ( desc ) => desc.ora === ora );
@@ -116,6 +122,12 @@ ObserverEmitter.prototype = {
             .filter( ( desc ) => path.basename( desc.png ) === png )
             .map( ( desc ) => desc.png )
             [ 0 ];
+    },
+    update: function ( png ) {
+        this._watched.filter( ( desc ) => desc.png === png ).forEach( ( desc ) => {
+            desc.rev++;
+            this.emit( 'update', png );
+        } );
     }
 };
 util.inherits( ObserverEmitter, EventEmitter );
@@ -163,7 +175,7 @@ function observe( boardDir, outDir ) {
                             watcher = startWatcher( oraPath, pngPath );
 
                             watcher.on( 'update', ( path ) => {
-                                observerEmitter.emit( 'update', path );
+                                observerEmitter.update( path );
                             } );
                         }
 

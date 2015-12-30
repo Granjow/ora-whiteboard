@@ -3,7 +3,8 @@ var path = require( 'path' ),
     oraObserver = require( './oraObserver' );
 
 var boardDir = path.join( __dirname, 'boards' ),
-    observer = oraObserver.observe( boardDir, __dirname );
+    imageDir = path.join( __dirname, 'public', 'cache' ),
+    observer = oraObserver.observe( boardDir, imageDir );
 
 var app = express();
 
@@ -24,7 +25,12 @@ app.get( '/boards', function ( req, res ) {
     } );
 } );
 app.get( '/boards/list', function ( req, res ) {
-    res.json( { boards: observer.watchedFiles() } );
+    res.json( {
+        boards: observer.watchedFilesDetails().map( function ( data ) {
+            data.url = '/boards/name/' + data.name + '/image?rev=' + data.rev;
+            return data;
+        } )
+    } );
 } );
 app.get( '/boards/name', function ( req, res ) {
     res.json( { uris: observer.watchedFiles() } );

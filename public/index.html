@@ -1,0 +1,25 @@
+<!doctype html>
+<html ng-app="oraBoard">
+<head>
+    <script type="text/javascript" src="assets/js/angular.js"></script>
+    <script type="text/javascript" src="app/app.js"></script>
+    <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+
+<h1>Hello.</h1>
+
+<div ng-controller="ThumbsController as thumbsController">
+
+    <div ng-repeat="data in thumbsController.imageData" class="thumbnail">
+        <img ng-src="{{data.url}}" style="width: 300px" />
+        {{data.name}}
+    </div>
+
+</div>
+
+<script type="text/javascript">
+
+</script>
+</body>
+</html>
