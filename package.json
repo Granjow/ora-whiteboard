@@ -1,6 +1,6 @@
 {
   "name": "ora-whiteboard",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "main": "./app.js",
   "author": "Simon A. Eugster <simon.eu@gmail.com>",
   "homepage": "https://github.com/Granjow/ora-whiteboard",
