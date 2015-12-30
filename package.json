@@ -2,6 +2,7 @@
   "name": "ora-whiteboard",
   "version": "0.0.1",
   "dependencies": {
+    "express": "^4.13.3",
     "ora-to-image": "^1.2.0"
   }
 }
