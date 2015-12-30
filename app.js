@@ -15,7 +15,7 @@ var startOraBoard = function ( boardDir, port ) {
 
     var app = express();
 
-    app.use( express.static( 'public' ) );
+    app.use( express.static( path.join( __dirname, 'public' ) ) );
 
     console.log( observer );
 
