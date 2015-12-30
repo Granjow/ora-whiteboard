@@ -7,13 +7,22 @@
 </head>
 <body>
 
-<h1>Hello.</h1>
+<h1>Live Whiteboard</h1>
 
 <div ng-controller="ThumbsController as thumbsController">
 
-    <div ng-repeat="data in thumbsController.imageData" class="thumbnail">
-        <img ng-src="{{data.url}}" style="width: 300px" />
-        {{data.name}}
+    <div
+            ng-repeat="data in thumbsController.imageData"
+            ng-class="{selected: thumbsController.selectedImage === data.name}"
+            class="thumbnail">
+        <div class="desc">
+            <h3>{{data.niceName}}</h3>
+            <p> r{{data.rev}} <a href="{{data.url}}">Direct</a></p>
+        </div>
+        <div class="thumb-container">
+            <img ng-src="{{data.url}}"
+                 ng-click="thumbsController.imageClicked(data.name)"/>
+        </div>
     </div>
 
 </div>

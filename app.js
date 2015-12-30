@@ -13,7 +13,7 @@ app.use( express.static( 'public' ) );
 console.log( observer );
 
 observer.on( 'update', ( path ) => {
-    console.log( 'UPDATED!'.green, path );
+    console.log( 'UPDATED!', path );
 } );
 
 app.get( '/boards', function ( req, res ) {
@@ -28,6 +28,7 @@ app.get( '/boards/list', function ( req, res ) {
     res.json( {
         boards: observer.watchedFilesDetails().map( function ( data ) {
             data.url = '/boards/name/' + data.name + '/image?rev=' + data.rev;
+            data.niceName = data.name[ 0 ].toUpperCase() + data.name.replace( '.png', '' ).substring( 1 );
             return data;
         } )
     } );

@@ -13,12 +13,12 @@ var nextId = (function () {
 /**
  * @param {string} oraPath
  * @param {string} pngPath
- * @param {boolean=} restarted
+ * @param {EventEmitter=} emitter
  */
-var startWatcher = function ( oraPath, pngPath, restarted ) {
+var startWatcher = function ( oraPath, pngPath, emitter ) {
 
     var watchEnded = false,
-        eventEmitter = new EventEmitter(),
+        eventEmitter = emitter || new EventEmitter(),
         id = nextId();
 
     /**
@@ -38,6 +38,7 @@ var startWatcher = function ( oraPath, pngPath, restarted ) {
                     }
                 } else {
                     console.log( id, 'PNG generated: ', pngPath );
+                    console.log( 'Emitter: ', eventEmitter );
                     eventEmitter.emit( 'update', pngPath );
                 }
             } );
@@ -59,7 +60,7 @@ var startWatcher = function ( oraPath, pngPath, restarted ) {
         } else if ( event === 'rename' ) {
             console.log( id, 'File was renamed: ', filename );
             watchEnded = true;
-            startWatcher( oraPath, pngPath, true );
+            startWatcher( oraPath, pngPath, eventEmitter );
 
         } else {
             console.warn( id, 'Unknown event: ', event, filename );
@@ -69,6 +70,7 @@ var startWatcher = function ( oraPath, pngPath, restarted ) {
 
     var startWatching = function ( restart ) {
         console.log( 'Starting watcher ', id );
+        var restarted = !!emitter;
 
         try {
 
@@ -124,8 +126,10 @@ ObserverEmitter.prototype = {
             [ 0 ];
     },
     update: function ( png ) {
+        console.log( 'Revision update for ', png );
         this._watched.filter( ( desc ) => desc.png === png ).forEach( ( desc ) => {
             desc.rev++;
+            console.log( png, 'r' + desc.rev );
             this.emit( 'update', png );
         } );
     }
