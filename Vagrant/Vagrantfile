@@ -1,0 +1,37 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# All Vagrant configuration is done below. The "2" in Vagrant.configure
+# configures the configuration version (we support older styles for
+# backwards compatibility). Please don't change it unless you know what
+# you're doing.
+Vagrant.configure(2) do |config|
+
+  config.vm.define :minion do |minion_config|
+
+    minion_config.vm.box = "ubuntu/trusty64"
+    minion_config.vm.host_name = "whiteboardminion.local"
+    minion_config.vm.network "private_network", ip: "192.168.22.22"
+    config.vm.network "public_network"
+
+    minion_config.vm.synced_folder "saltstack/salt/", "/srv/salt/"
+    minion_config.vm.synced_folder "saltstack/pillar/", "/srv/pillar/"
+    minion_config.vm.synced_folder "saltstack/formulas/", "/srv/formulas/"
+    minion_config.vm.synced_folder "../", "/usr/local/share/ora-whiteboard/"
+
+    minion_config.vm.provision :salt do |salt|
+      salt.install_master = false
+      salt.no_minion = false
+      salt.masterless = true
+      salt.minion_config = "saltstack/etc/salt/minion"
+      salt.colorize = true
+      salt.bootstrap_options = "-P -c /tmp"
+    end
+
+    minion_config.vm.provider "virtualbox" do |v|
+      v.memory = 1536
+    end
+
+  end
+
+end
