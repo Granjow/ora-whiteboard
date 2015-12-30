@@ -1,0 +1,1 @@
+require( './app.js' ).startOraBoard( 'boards', 3311 );
