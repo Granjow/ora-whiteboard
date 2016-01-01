@@ -2,6 +2,10 @@
   "name": "ora-whiteboard",
   "version": "0.1.3",
   "main": "./app.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Granjow/ora-whiteboard.git"
+  },
   "author": "Simon A. Eugster <simon.eu@gmail.com>",
   "homepage": "https://github.com/Granjow/ora-whiteboard",
   "dependencies": {
