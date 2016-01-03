@@ -93,17 +93,25 @@
         return {
             restrict: 'E',
             templateUrl: './app/board-image.html',
-            controller: function () {
+            controller: function ( $scope ) {
 
-                this.fullscreen = false;
+                console.log( 'My name: ', $scope.boardname );
 
-                this.toggleFullscreen = function () {
-                    this.fullscreen = !this.fullscreen;
+                this.fullsize = false;
+                this.fullsizeText = '100 %';
+
+                this.toggleFullsize = function () {
+                    this.fullsize = !this.fullsize;
+                    this.fullsizeText = this.fullsize ? 'fit' : '100 %';
                 };
 
                 this.imageClicked = function ( name ) {
                     whiteboardService.imageClicked( name )
-                }
+                };
+
+                this.isSelected = function ( name ) {
+                    return whiteboardService.isSelected( name );
+                };
 
             },
             controllerAs: 'board'

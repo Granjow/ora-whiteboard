@@ -1,4 +1,6 @@
-<div>
+<div
+        class="thumbnail"
+        ng-class="{ selected: board.isSelected( data.name ), fullsize: board.fullsize }">
     <div class="desc">
         <h3>{{data.niceName}}</h3>
         <p>
@@ -11,5 +13,8 @@
              ng-click="board.imageClicked( data.name )"/>
     </div>
     <div class="button original-size"
-         ng-click="board.toggleFullscreen()"></div>
+         ng-click="board.toggleFullsize()"
+         ng-show="board.isSelected( data.name )">
+        {{board.fullsizeText}}
+    </div>
 </div>
