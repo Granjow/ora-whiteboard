@@ -12,22 +12,32 @@ h1, h2, h3, h4, h5 {
     font-family: AnnapurnaSILW, serif;
 }
 
+h3 {
+    font-size: 1.5em;
+}
+
 body {
     background-color: #333;
     color: #fafafa;
     font-family: AndikaW, sans-serif;
+    padding: 0;
+    margin: 10px;
 }
 
 a {
-    color: #0af;
+    color: #00679a;
     font-weight: bold;
+}
+a:hover {
+    text-decoration: underline;
 }
 
 .thumbnail {
-    background-color: #000;
+    background-color: #222;
     display: inline-block;
+    vertical-align: top;
     padding: 10px;
-    margin: 10px;
+    margin: 10px 10px 0 0;
     position: relative;
 }
 
@@ -43,25 +53,30 @@ a {
 
 .thumbnail .desc h3 {
     padding: 0;
-    margin: 5px 0 -10px 0;
-    font-size: 2em;
+    margin: 0 0 -10px;
 }
 
 .thumbnail img {
-    width: 400px;
     cursor: pointer;
+    max-width: 400px;
+    max-height: 400px;
 }
 
 .thumbnail .rev {
     position: absolute;
     top: 1px;
     left: 10px;
+    color: #999;
 }
 
 .thumbnail .direct {
     position: absolute;
     top: 1px;
     right: 10px;
+    display: none;
+}
+.thumbnail:hover .direct {
+    display: inherit;
 }
 
 .thumbnail.selected {
@@ -70,6 +85,8 @@ a {
     left: 0;
     bottom: 0;
     right: 0;
+    margin: 0;
+    z-index: 1;
 }
 .thumbnail.selected .thumb-container {
     width: 100%;

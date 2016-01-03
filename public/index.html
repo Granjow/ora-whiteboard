@@ -9,26 +9,7 @@
 
 <h1>Live Whiteboard</h1>
 
-<div ng-controller="ThumbsController as thumbsController">
-
-    <div
-            ng-repeat="data in thumbsController.imageData"
-            ng-class="{selected: thumbsController.selectedImage === data.name}"
-            class="thumbnail">
-        <div class="desc">
-            <h3>{{data.niceName}}</h3>
-            <p>
-                <span class="rev">r{{data.rev}}</span>
-                <a class="direct" href="{{data.url}}">PNG</a>
-            </p>
-        </div>
-        <div class="thumb-container">
-            <img ng-src="{{data.url}}"
-                 ng-click="thumbsController.imageClicked(data.name)"/>
-        </div>
-    </div>
-
-</div>
+<whiteboards-list></whiteboards-list>
 
 <script type="text/javascript">
 

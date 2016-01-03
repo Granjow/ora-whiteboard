@@ -1,21 +1,24 @@
 (function () {
     var app = angular.module( 'oraBoard', [] );
 
-    app.controller( 'ThumbsController', [ '$http', '$interval', function ( $http, $interval ) {
+    app.factory( 'whiteboardService', [ '$http', '$interval', function ( $http, $interval ) {
 
-        var me = this;
+        var imageData = [];
+        var selectedImage = '';
 
-        this.imageData = [];
-        this.selectedImage = '';
-
-        this.imageClicked = function ( name ) {
-            var changed = name !== me.selectedImage;
-            if ( me.selectedImage === name ) {
-                me.selectedImage = '';
+        var imageClicked = function ( name ) {
+            console.log( 'Selecting image ', name );
+            var changed = name !== selectedImage;
+            if ( selectedImage === name ) {
+                selectedImage = '';
             } else {
-                me.selectedImage = name;
+                selectedImage = name;
             }
             return changed;
+        };
+
+        var isSelected = function ( name ) {
+            return selectedImage === name;
         };
 
 
@@ -25,12 +28,12 @@
 
                 var boards = response.data.boards;
                 boards.forEach( function ( board ) {
-                    var ourBoard = me.imageData.find( function ( el ) {
+                    var ourBoard = imageData.find( function ( el ) {
                         return el.name === board.name;
                     } );
 
                     if ( !ourBoard ) {
-                        me.imageData.push( board );
+                        imageData.push( board );
                     } else {
                         if ( ourBoard.rev !== board.rev ) {
                             console.log( 'Board was updated:', ourBoard, board );
@@ -50,15 +53,61 @@
 
         document.addEventListener( 'keypress', function ( key ) {
             if ( key.keyCode === 27 ) {
-                return !me.imageClicked( '' );
+                return !imageClicked( '' );
             }
             return true;
         } );
 
-        $interval( reload, 1000 );
+        $interval( reload, 2000 );
 
         reload();
 
+        return {
+            imageData: imageData,
+            isSelected: isSelected,
+            imageClicked: imageClicked
+        }
+
+    } ] );
+
+    app.directive( 'whiteboardsList', [ 'whiteboardService', function ( whiteboardService ) {
+
+        return {
+            restrict: 'E',
+            templateUrl: './app/whiteboards-list.html',
+            controller: function () {
+
+                this.boards = whiteboardService.imageData;
+
+                this.isSelected = function ( name ) {
+                    return whiteboardService.isSelected( name );
+                };
+
+            },
+            controllerAs: 'whiteboards'
+        };
+
+    } ] );
+
+    app.directive( 'boardImage', [ 'whiteboardService', function ( whiteboardService ) {
+        return {
+            restrict: 'E',
+            templateUrl: './app/board-image.html',
+            controller: function () {
+
+                this.fullscreen = false;
+
+                this.toggleFullscreen = function () {
+                    this.fullscreen = !this.fullscreen;
+                };
+
+                this.imageClicked = function ( name ) {
+                    whiteboardService.imageClicked( name )
+                }
+
+            },
+            controllerAs: 'board'
+        };
     } ] );
 
 })();

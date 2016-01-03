@@ -1,3 +1,4 @@
 .idea
 node_modules
 Vagrant/.vagrant
+public/cache
