@@ -9,11 +9,13 @@
         this.selectedImage = '';
 
         this.imageClicked = function ( name ) {
+            var changed = name !== me.selectedImage;
             if ( me.selectedImage === name ) {
                 me.selectedImage = '';
             } else {
                 me.selectedImage = name;
             }
+            return changed;
         };
 
 
@@ -45,6 +47,13 @@
                 console.warn( 'Failed: ', err );
             } );
         };
+
+        document.addEventListener( 'keypress', function ( key ) {
+            if ( key.keyCode === 27 ) {
+                return !me.imageClicked( '' );
+            }
+            return true;
+        } );
 
         $interval( reload, 1000 );
 
