@@ -11,5 +11,8 @@
   "dependencies": {
     "express": "^4.13.3",
     "ora-to-image": "^1.2.0"
+  },
+  "engines": {
+    "node": ">=5.0.0"
   }
 }
