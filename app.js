@@ -5,13 +5,16 @@ var path = require( 'path' ),
 /**
  *
  * @param {string} boardDir
- * @param {number} port
- * @returns {*}
+ * @param {{port:number, sharedFs:boolean}} options
+ * Port: Port number where the server will be listening
+ * sharedFs: Use the stable fs.watchFile() instead of fs.watch(), e.g. for network shares.
+ * fs.watch() does not work on network shares, or on virtual machine shared folders.
  */
-var startOraBoard = function ( boardDir, port ) {
+var startOraBoard = function ( boardDir, options ) {
 
     var imageDir = path.join( __dirname, 'public', 'cache' ),
-        observer = oraObserver.observe( boardDir, imageDir );
+        observer = oraObserver.observe( boardDir, imageDir, options ),
+        port = options.port || 3311;
 
     var app = express();
 

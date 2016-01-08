@@ -11,15 +11,21 @@ var nextId = (function () {
 })();
 
 /**
- * @param {string} oraPath
- * @param {string} pngPath
+ * @param {{oraPath:string, pngPath: string, sharedFs: boolean}} options
+ *  sharedFs Set to true when working with a shared file system
  * @param {EventEmitter=} emitter
+ * which does not provide modification events.
  */
-var startWatcher = function ( oraPath, pngPath, emitter ) {
+var startWatcher = function ( options, emitter ) {
 
     var watchEnded = false,
+        oraPath = options.oraPath,
+        pngPath = options.pngPath,
+        sharedFs = !!options.sharedFs,
         eventEmitter = emitter || new EventEmitter(),
         id = nextId();
+
+    console.log( 'Shared FS mode: ' + (sharedFs ? 'on' : 'off') );
 
     /**
      * @param {number} retries Number of retries
@@ -60,12 +66,21 @@ var startWatcher = function ( oraPath, pngPath, emitter ) {
         } else if ( event === 'rename' ) {
             console.log( id, 'File was renamed: ', filename );
             watchEnded = true;
-            startWatcher( oraPath, pngPath, eventEmitter );
+            startWatcher( options, eventEmitter );
 
         } else {
             console.warn( id, 'Unknown event: ', event, filename );
         }
 
+    };
+
+    var fileWatcher = ( curr, prev ) => {
+        if ( prev.mtime !== curr.mtime ) {
+            //console.log( 'Modification time changed from ' + prev.mtime + ' to ' + curr.mtime );
+            toImage( 1 );
+        } else {
+            console.log( 'File was not modified: ', curr, prev );
+        }
     };
 
     var startWatching = function ( restart ) {
@@ -74,7 +89,14 @@ var startWatcher = function ( oraPath, pngPath, emitter ) {
 
         try {
 
-            fs.watch( oraPath, watcher );
+            // Use watchFile for shared file systems,
+            // and watch for those supporting events
+            if ( sharedFs ) {
+                fs.watchFile( oraPath, fileWatcher );
+            } else {
+                fs.watch( oraPath, watcher );
+            }
+
             if ( !restarted ) {
                 toImage( 1 );
             }
@@ -140,14 +162,16 @@ util.inherits( ObserverEmitter, EventEmitter );
  *
  * @param {string} boardDir
  * @param {string} outDir
+ * @param {{sharedFs:boolean}} options
  * @returns {ObserverEmitter}
  */
-function observe( boardDir, outDir ) {
+function observe( boardDir, outDir, options ) {
 
     console.log( 'Observing ', boardDir, ' and generating files to ', outDir );
 
     /** List of watched files. */
-    var observerEmitter = new ObserverEmitter();
+    var observerEmitter = new ObserverEmitter(),
+        skipList = [];
 
     scan();
 
@@ -166,25 +190,31 @@ function observe( boardDir, outDir ) {
                         oraPath,
                         pngPath;
 
-                    if ( f.toLowerCase().endsWith( '.ora' ) ) {
+                    // Only use .ora files, and ignore files which start with a .
+                    if ( f.toLowerCase().endsWith( '.ora' ) && f[ 0 ] !== '.' ) {
 
                         oraPath = path.join( boardDir, f );
                         pngPath = path.join( outDir, f.substring( 0, f.length - 4 ) + '.png' );
 
-                        // Watch this file, if it is not watched already.
+                        // Watch this file, if it is not being watched already.
                         if ( !observerEmitter.isWatched( oraPath ) ) {
 
                             console.log( 'ORA found: ', f );
                             observerEmitter.addWatched( oraPath, pngPath );
-                            watcher = startWatcher( oraPath, pngPath );
+                            watcher = startWatcher( {
+                                oraPath: oraPath,
+                                pngPath: pngPath,
+                                sharedFs: options.sharedFs
+                            } );
 
                             watcher.on( 'update', ( path ) => {
                                 observerEmitter.update( path );
                             } );
                         }
 
-                    } else {
+                    } else if ( skipList.indexOf( f ) < 0 ) {
                         console.log( 'Skipping ', f );
+                        skipList.push( f );
                     }
 
                 } );
