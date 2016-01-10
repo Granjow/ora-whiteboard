@@ -1,5 +1,6 @@
 var path = require( 'path' ),
     express = require( 'express' ),
+    winston = require( 'winston' ),
     oraObserver = require( './oraObserver' );
 
 var pngToNiceName = function ( name ) {
@@ -32,10 +33,10 @@ var startOraBoard = function ( options ) {
 
     app.use( express.static( path.join( __dirname, 'public' ) ) );
 
-    console.log( observer );
+    winston.log( 'debug', observer );
 
     observer.on( 'update', ( path ) => {
-        console.log( 'UPDATED!', path );
+        winston.log( 'info', 'UPDATED!', path );
     } );
 
     app.get( '/collections/0', function ( req, res ) {
@@ -75,7 +76,7 @@ var startOraBoard = function ( options ) {
         if ( observer.hasImage( req.params.name ) ) {
             res.sendFile( observer.fullImagePath( req.params.name ) );
         } else {
-            console.log( req.params.name );
+            winston.log( 'debug', req.params.name );
             res.status( 404 ).json( { message: 'Image does not exist' } );
         }
     } );
@@ -96,5 +97,11 @@ var startOraBoard = function ( options ) {
 };
 
 module.exports = {
-    startOraBoard
+    startOraBoard,
+    /**
+     * @param {string} level info, debug, or warn.
+     */
+    set logLevel( level ) {
+        winston.level = level;
+    }
 };

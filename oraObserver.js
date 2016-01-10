@@ -4,6 +4,7 @@ const
     util = require( 'util' ),
     EventEmitter = require( 'events' ),
     archiver = require( 'archiver' ),
+    winston = require( 'winston' ),
     oti = require( 'ora-to-image' );
 
 var nextId = (function () {
@@ -34,66 +35,66 @@ var startWatcher = function ( options, emitter ) {
         eventEmitter = emitter || new EventEmitter(),
         id = nextId();
 
-    console.log( 'Shared FS mode: ' + (sharedFs ? 'on' : 'off') );
+    winston.log( 'info', 'Shared FS mode: ' + (sharedFs ? 'on' : 'off') );
 
     /**
      * @param {number} retries Number of retries
      */
     var toImage = ( retries ) => {
-        console.log( id, 'Converting to PNG ...' );
+        winston.log( 'debug', id, 'Converting to PNG ...' );
         try {
             oti.oraToImage( oraPath, pngPath, function ( err ) {
                 if ( err ) {
                     if ( retries > 0 ) {
-                        console.log( id, 'Failed generating ' + pngPath + ', trying again ... (' + err + ')' );
+                        winston.log( 'info', id, 'Failed generating ' + pngPath + ', trying again ... (' + err + ')' );
                         setTimeout( () => toImage( retries - 1 ), 100 );
                     } else {
-                        console.log( id, 'Failed generating ' + pngPath );
-                        console.warn( err );
+                        winston.log( 'warn', id, 'Failed generating ' + pngPath );
+                        winston.warn( err );
                     }
                 } else {
-                    console.log( id, 'PNG generated: ', pngPath );
-                    console.log( 'Emitter: ', eventEmitter );
+                    winston.log( 'info', id, 'PNG generated: ', pngPath );
+                    winston.log( 'debug', 'Emitter: ', eventEmitter );
                     eventEmitter.emit( 'update', pngPath );
                 }
             } );
         } catch ( err ) {
-            console.warn( err );
+            winston.log( 'warn', err );
         }
     };
 
     var watcher = function ( event, filename ) {
         if ( watchEnded ) {
-            console.log( id, 'Event received although watch ended: ', event, filename );
+            winston.log( 'debug', id, 'Event received although watch ended: ', event, filename );
             return;
         }
 
         if ( event === 'change' ) {
-            console.log( id, 'File changed:', filename );
+            winston.log( 'info', id, 'File changed:', filename );
             toImage( 1 );
 
         } else if ( event === 'rename' ) {
-            console.log( id, 'File was renamed: ', filename );
+            winston.log( 'info', id, 'File was renamed: ', filename );
             watchEnded = true;
             startWatcher( options, eventEmitter );
 
         } else {
-            console.warn( id, 'Unknown event: ', event, filename );
+            winston.log( 'warn', id, 'Unknown event: ', event, filename );
         }
 
     };
 
     var fileWatcher = ( curr, prev ) => {
         if ( prev.mtime !== curr.mtime ) {
-            //console.log( 'Modification time changed from ' + prev.mtime + ' to ' + curr.mtime );
+            winston.log( 'info', 'Modification time changed from ' + prev.mtime + ' to ' + curr.mtime );
             toImage( 1 );
         } else {
-            console.log( 'File was not modified: ', curr, prev );
+            winston.log( 'debug', 'File was not modified: ', curr, prev );
         }
     };
 
     var startWatching = function ( restart ) {
-        console.log( 'Starting watcher ', id );
+        winston.log( 'debug', 'Starting watcher ', id );
         var restarted = !!emitter;
 
         try {
@@ -114,7 +115,7 @@ var startWatcher = function ( options, emitter ) {
             if ( restart ) {
                 setTimeout( () => startWatching( false ), 100 );
             } else {
-                console.warn( 'Could not start watcher for ' + oraPath, e );
+                winston.log( 'warn', 'Could not start watcher for ' + oraPath, e );
                 if ( e.code === 'ENOENT' ) {
                     eventEmitter.emit( 'delete', pngPath );
                 }
@@ -156,7 +157,7 @@ ObserverEmitter.prototype = {
     },
     addWatched: function ( ora, png ) {
         var current = this._watched.filter( ( desc ) => desc.ora === ora );
-        current.forEach( ( desc ) => console.log( 'File is being watched already. Resetting if deleted. Was deleted: ', desc.deleted ) );
+        current.forEach( ( desc ) => winston.log( 'info', 'File is being watched already. Resetting if deleted. Was deleted: ', desc.deleted ) );
         if ( current.length > 0 ) {
             current.forEach( ( desc ) => desc.deleted = false );
         } else {
@@ -176,15 +177,15 @@ ObserverEmitter.prototype = {
             [ 0 ];
     },
     update: function ( png ) {
-        console.log( 'Revision update for ', png );
+        winston.log( 'info', 'Revision update for ', png );
         this._watched.filter( ( desc ) => desc.png === png ).forEach( ( desc ) => {
             desc.rev++;
-            console.log( png, 'r' + desc.rev );
+            winston.log( png, 'r' + desc.rev );
             this.emit( 'update', png );
         } );
     },
     delete: function ( png ) {
-        console.log( 'File was deleted: ', png );
+        winston.log( 'info', 'File was deleted: ', png );
         this._watched.filter( ( desc ) => desc.png === png ).forEach( ( desc ) => {
             desc.deleted = true;
             this.emit( 'delete', png );
@@ -229,7 +230,7 @@ util.inherits( ObserverEmitter, EventEmitter );
  */
 function observe( boardDir, outDir, options ) {
 
-    console.log( 'Observing ', boardDir, ' and generating files to ', outDir );
+    winston.log( 'info', 'Observing ', boardDir, ' and generating files to ', outDir );
 
     /** List of watched files. */
     var observerEmitter = new ObserverEmitter(),
@@ -242,7 +243,7 @@ function observe( boardDir, outDir, options ) {
         fs.readdir( boardDir, function ( err, files ) {
 
             if ( err ) {
-                console.warn( err );
+                winston.log( 'warn', err );
             } else {
 
                 // List files in directory, and watch new ones.
@@ -261,7 +262,7 @@ function observe( boardDir, outDir, options ) {
                         // Watch this file, if it is not being watched already.
                         if ( !observerEmitter.isWatched( oraPath ) ) {
 
-                            console.log( 'ORA found: ', f );
+                            winston.log( 'info', 'ORA found: ', f );
                             observerEmitter.addWatched( oraPath, pngPath );
                             watcher = startWatcher( {
                                 oraPath: oraPath,
@@ -278,7 +279,7 @@ function observe( boardDir, outDir, options ) {
                         }
 
                     } else if ( skipList.indexOf( f ) < 0 ) {
-                        console.log( 'Skipping ', f );
+                        winston.log( 'info', 'Skipping ', f );
                         skipList.push( f );
                     }
 

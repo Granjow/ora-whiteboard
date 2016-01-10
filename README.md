@@ -1,5 +1,9 @@
 OraWhiteboart provides online-published whiteboards. It reads OpenRaster files and updates them on the web page.
- 
+
+## Installation
+
+    npm install ora-whiteboard
+
 ## Usage
 
     require( 'ora-whiteboard' ).startOraBoard( {
@@ -14,7 +18,13 @@ You can save new ORA files (e.g. with MyPaint), and they will automatically show
 
 ![Screenshot](resources/screenshot.png)
 
-## Configuration
+## API
+
+### .startOraBoard( options )
+
+Starts a server listening on the given port.
+
+`options`:
 
     {
         boardDir: 'boards/',    # Directory path containing ORA files
@@ -22,6 +32,12 @@ You can save new ORA files (e.g. with MyPaint), and they will automatically show
         sharedFs: true,         # If the watched directory is from a share, set it to true.
         title: 'ORA Board'      # To set a custom title
     }
+
+### .logLevel
+
+Can be set to `warn`, `info`, or `debug`. Example:
+
+    oraWhiteboard.logLevel = 'info';
 
 ### Working with network and Virtual Machine shares
 
