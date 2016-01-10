@@ -1,6 +1,13 @@
 (function () {
     var app = angular.module( 'oraBoard', [] );
 
+    /**
+     * Only for forwarding keyboard shortcuts to the service.
+     */
+    app.controller( 'whiteboardController', [ 'whiteboardService', function ( whiteboardService ) {
+        this.keypressHandler = whiteboardService.keypressCallback;
+    } ] );
+
     app.factory( 'whiteboardService', [ '$http', '$interval', function ( $http, $interval ) {
 
         var imageData = [];
@@ -14,6 +21,7 @@
             } else {
                 selectedImage = name;
             }
+
             return changed;
         };
 
@@ -66,12 +74,17 @@
             } );
         };
 
-        document.addEventListener( 'keypress', function ( key ) {
-            if ( key.keyCode === 27 ) {
-                return !imageClicked( '' );
+        var keypressCallback = function ( event ) {
+            // Exit fullscreen when pressing Esc
+            if ( event.keyCode === 27 ) {
+                var unselected = !imageClicked( '' );
+                if ( unselected ) {
+                    event.preventDefault();
+                }
+                return unselected;
             }
             return true;
-        } );
+        };
 
         $interval( reload, 1000 );
 
@@ -81,7 +94,8 @@
             imageData: imageData,
             isSelected: isSelected,
             imageClicked: imageClicked,
-            getImageData: getImageData
+            getImageData: getImageData,
+            keypressCallback: keypressCallback
         }
 
     } ] );
