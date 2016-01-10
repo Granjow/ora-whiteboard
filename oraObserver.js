@@ -11,10 +11,18 @@ var nextId = (function () {
 })();
 
 /**
- * @param {{oraPath:string, pngPath: string, sharedFs: boolean}} options
- *  sharedFs Set to true when working with a shared file system
  * @param {EventEmitter=} emitter
- * which does not provide modification events.
+ * @param {{oraPath:string, pngPath: string, sharedFs: boolean}} options
+ * <ul>
+ *      <li>sharedFs: Set to true when working with a shared file system
+ *      which does not provide modification events.</li>
+ *      <li>oraPath, pngPath: Paths to input ORA and output PNG file</li>
+ * </ul>
+ * @returns {EventEmitter} Events:
+ * <ul>
+ *     <li>update: When a PNG was updated</li>
+ *     <li>delete: When an ORA file was removed</li>
+ * </ul>
  */
 var startWatcher = function ( options, emitter ) {
 
@@ -106,6 +114,9 @@ var startWatcher = function ( options, emitter ) {
                 setTimeout( () => startWatching( false ), 100 );
             } else {
                 console.warn( 'Could not start watcher for ' + oraPath, e );
+                if ( e.code === 'ENOENT' ) {
+                    eventEmitter.emit( 'delete', pngPath );
+                }
             }
         }
     };
@@ -115,9 +126,18 @@ var startWatcher = function ( options, emitter ) {
     return eventEmitter;
 };
 
+
+var WatchEntry = function ( ora, png ) {
+    this.ora = ora;
+    this.png = png;
+    this.rev = 0;
+    this.deleted = false;
+};
+
 var ObserverEmitter = function () {
     EventEmitter.call( this );
 
+    /** @type {Array.<WatchEntry>} */
     this._watched = [];
 
     return this;
@@ -129,11 +149,12 @@ ObserverEmitter.prototype = {
     watchedFilesDetails: function () {
         return this._watched.map( ( desc ) => ({
             name: path.basename( desc.png ),
-            rev: desc.rev
+            rev: desc.rev,
+            deleted: desc.deleted
         }) );
     },
     addWatched: function ( ora, png ) {
-        this._watched.push( { ora: ora, png: png, rev: 0 } );
+        this._watched.push( new WatchEntry( ora, png ) );
     },
     isWatched: function ( ora ) {
         return this._watched.some( ( desc ) => desc.ora === ora );
@@ -153,6 +174,13 @@ ObserverEmitter.prototype = {
             desc.rev++;
             console.log( png, 'r' + desc.rev );
             this.emit( 'update', png );
+        } );
+    },
+    delete: function ( png ) {
+        console.log( 'File was deleted: ', png );
+        this._watched.filter( ( desc ) => desc.png === png ).forEach( ( desc ) => {
+            desc.deleted = true;
+            this.emit( 'delete', png );
         } );
     }
 };
@@ -210,6 +238,9 @@ function observe( boardDir, outDir, options ) {
                             watcher.on( 'update', ( path ) => {
                                 observerEmitter.update( path );
                             } );
+                            watcher.on( 'delete', ( path ) => {
+                                observerEmitter.delete( path );
+                            } )
                         }
 
                     } else if ( skipList.indexOf( f ) < 0 ) {

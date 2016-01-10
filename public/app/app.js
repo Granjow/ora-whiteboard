@@ -21,6 +21,12 @@
             return selectedImage === name;
         };
 
+        var getImageData = function ( name ) {
+            return imageData.filter( function ( el ) {
+                return el.name === name;
+            } )[ 0 ];
+        };
+
 
         var reload = function () {
             $http.get( '/boards/list/' ).then( function ( response ) {
@@ -33,9 +39,18 @@
                     } );
 
                     if ( !ourBoard ) {
-                        imageData.push( board );
+                        if ( !board.deleted ) {
+                            imageData.push( board );
+                        }
                     } else {
-                        if ( ourBoard.rev !== board.rev ) {
+
+                        if ( board.deleted ) {
+
+                            console.log( 'Board was deleted: ', ourBoard, board );
+                            imageData.splice( imageData.indexOf( ourBoard ), 1 );
+
+                        } else if ( ourBoard.rev !== board.rev ) {
+
                             console.log( 'Board was updated:', ourBoard, board );
                             for ( var prop in board ) {
                                 if ( board.hasOwnProperty( prop ) ) {
@@ -58,14 +73,15 @@
             return true;
         } );
 
-        $interval( reload, 2000 );
+        $interval( reload, 1000 );
 
         reload();
 
         return {
             imageData: imageData,
             isSelected: isSelected,
-            imageClicked: imageClicked
+            imageClicked: imageClicked,
+            getImageData: getImageData
         }
 
     } ] );
@@ -89,13 +105,14 @@
 
     } ] );
 
+    /**
+     * Thumbnail entry of a board
+     */
     app.directive( 'boardImage', [ 'whiteboardService', function ( whiteboardService ) {
         return {
             restrict: 'E',
             templateUrl: './app/board-image.html',
-            controller: function ( $scope ) {
-
-                console.log( 'My name: ', $scope.boardname );
+            controller: function () {
 
                 this.fullsize = false;
                 this.fullsizeText = '100 %';
@@ -112,6 +129,11 @@
                 this.isSelected = function ( name ) {
                     return whiteboardService.isSelected( name );
                 };
+
+                this.isDeleted = function ( name ) {
+                    var imageData = whiteboardService.getImageData( name );
+                    return imageData && imageData.deleted;
+                }
 
             },
             controllerAs: 'board'

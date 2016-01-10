@@ -1,6 +1,10 @@
 <div
         class="thumbnail"
-        ng-class="{ selected: board.isSelected( data.name ), fullsize: board.fullsize }">
+        ng-class="{
+            selected: board.isSelected( data.name ),
+            fullsize: board.fullsize,
+            deleted: board.isDeleted( data.name )
+        }">
     <div class="desc">
         <h3>{{data.niceName}}</h3>
         <p>
