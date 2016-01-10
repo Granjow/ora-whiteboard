@@ -3,6 +3,7 @@ const
     path = require( 'path' ),
     util = require( 'util' ),
     EventEmitter = require( 'events' ),
+    archiver = require( 'archiver' ),
     oti = require( 'ora-to-image' );
 
 var nextId = (function () {
@@ -188,6 +189,33 @@ ObserverEmitter.prototype = {
             desc.deleted = true;
             this.emit( 'delete', png );
         } );
+    },
+    /**
+     * Zip all current boards.
+     * @param {function(err, archive:Archiver|Stream)} callback
+     * @returns {Archiver|Stream}
+     */
+    zip: function ( callback ) {
+        var archive = archiver.create( 'zip', {} ),
+            details = 'This ORA board snapshot contains the following files:';
+        archive.on( 'finish', () => callback( null, archive ) );
+
+        this._watched.forEach( ( desc ) => {
+            archive.file( desc.png, {
+                name: path.basename( desc.png ),
+                prefix: 'boards'
+            } );
+            details += '\n* ' + path.basename( desc.png ) + ', r' + desc.rev;
+        } );
+
+        details += '\n\nCreated on ' + (new Date().toLocaleString());
+
+        archive.append( details, {
+            name: 'INFO.txt',
+            prefix: 'boards'
+        } );
+
+        archive.finalize();
     }
 };
 util.inherits( ObserverEmitter, EventEmitter );

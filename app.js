@@ -13,10 +13,13 @@ var pngToNiceName = function ( name ) {
 /**
  *
  * @param {string} boardDir
- * @param {{port:number, sharedFs:boolean}} options
- * Port: Port number where the server will be listening
- * sharedFs: Use the stable fs.watchFile() instead of fs.watch(), e.g. for network shares.
- * fs.watch() does not work on network shares, or on virtual machine shared folders.
+ * @param {{port:number, sharedFs:boolean, title:string}} options
+ * <ul>
+ * <li>Port: Port number where the server will be listening</li>
+ * <li>sharedFs: Use the stable fs.watchFile() instead of fs.watch(), e.g. for network shares.
+ * fs.watch() does not work on network shares, or on virtual machine shared folders.</li>
+ * <li>title: Page title</li>
+ * </ul>
  */
 var startOraBoard = function ( boardDir, options ) {
 
@@ -32,6 +35,12 @@ var startOraBoard = function ( boardDir, options ) {
 
     observer.on( 'update', ( path ) => {
         console.log( 'UPDATED!', path );
+    } );
+
+    app.get( '/collections/0', function ( req, res ) {
+        res.json( {
+            title: options.title || 'Live ORA Whiteboard'
+        } );
     } );
 
     app.get( '/boards', function ( req, res ) {
@@ -68,6 +77,16 @@ var startOraBoard = function ( boardDir, options ) {
             console.log( req.params.name );
             res.status( 404 ).json( { message: 'Image does not exist' } );
         }
+    } );
+    app.get( '/boards/zip', function ( req, res ) {
+        observer.zip( ( err, archive ) => {
+            res.header( {
+                'Content-Type': 'application/zip',
+                'Content-Length': archive.pointer(),
+                'Content-Disposition': 'attachment;filename=Whiteboards-' + (new Date().getTime()) + '.zip'
+            } );
+            archive.pipe( res );
+        } );
     } );
 
     app.listen( port );

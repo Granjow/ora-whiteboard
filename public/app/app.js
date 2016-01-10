@@ -4,8 +4,17 @@
     /**
      * Only for forwarding keyboard shortcuts to the service.
      */
-    app.controller( 'whiteboardController', [ 'whiteboardService', function ( whiteboardService ) {
+    app.controller( 'whiteboardController', [ 'whiteboardService', '$http', function ( whiteboardService, $http ) {
         this.keypressHandler = whiteboardService.keypressCallback;
+        this.title = 'Loading …';
+
+        var me = this;
+        $http.get( '/collections/0' ).then( function ( res ) {
+            console.log( 'DATA:', res.data );
+            if ( res.data.title ) {
+                me.title = res.data.title || 'Live Whiteboard';
+            }
+        } );
     } ] );
 
     app.factory( 'whiteboardService', [ '$http', '$interval', function ( $http, $interval ) {

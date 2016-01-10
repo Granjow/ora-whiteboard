@@ -5,3 +5,4 @@ public/cache/*.png
 boards/*.ora
 !boards/Example.ora
 *.tgz
+demo.zip

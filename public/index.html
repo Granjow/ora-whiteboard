@@ -1,13 +1,17 @@
 <!doctype html>
 <html ng-app="oraBoard">
 <head>
+    <meta charset="utf-8"/>
     <script type="text/javascript" src="assets/js/angular.js"></script>
     <script type="text/javascript" src="app/app.js"></script>
     <link rel="stylesheet" href="css/style.css"/>
+    <title>Whiteboards</title>
 </head>
 <body ng-controller="whiteboardController as ctrl" ng-keypress="ctrl.keypressHandler( $event )">
 
-<h1>Live Whiteboard</h1>
+<h1 ng-bind="ctrl.title">Live Whiteboard</h1>
+
+<p><a href="/boards/zip">Download</a> the current boards as <code>zip</code> file.</p>
 
 <whiteboards-list></whiteboards-list>
 
