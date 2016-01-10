@@ -2,6 +2,14 @@ var path = require( 'path' ),
     express = require( 'express' ),
     oraObserver = require( './oraObserver' );
 
+var pngToNiceName = function ( name ) {
+    return name
+        .substring( 0, name.lastIndexOf( '.' ) )
+        .split( '_' )
+        .map( ( s ) => s[ 0 ].toUpperCase() + s.substring( 1 ) )
+        .join( ' ' );
+};
+
 /**
  *
  * @param {string} boardDir
@@ -38,7 +46,7 @@ var startOraBoard = function ( boardDir, options ) {
         res.json( {
             boards: observer.watchedFilesDetails().map( function ( data ) {
                 data.url = '/boards/name/' + data.name + '/image?rev=' + data.rev;
-                data.niceName = data.name[ 0 ].toUpperCase() + data.name.replace( '.png', '' ).substring( 1 );
+                data.niceName = pngToNiceName( data.name );
                 return data;
             } )
         } );
