@@ -12,18 +12,19 @@ var pngToNiceName = function ( name ) {
 
 /**
  *
- * @param {string} boardDir
- * @param {{port:number, sharedFs:boolean, title:string}} options
+ * @param {{boardDir: string, port:number, sharedFs:boolean, title:string}} options
  * <ul>
+ * <li>boardDir: Path to the directory containing the ORA files</li>
  * <li>Port: Port number where the server will be listening</li>
  * <li>sharedFs: Use the stable fs.watchFile() instead of fs.watch(), e.g. for network shares.
  * fs.watch() does not work on network shares, or on virtual machine shared folders.</li>
  * <li>title: Page title</li>
  * </ul>
  */
-var startOraBoard = function ( boardDir, options ) {
+var startOraBoard = function ( options ) {
 
-    var imageDir = path.join( __dirname, 'public', 'cache' ),
+    var boardDir = options.boardDir,
+        imageDir = path.join( __dirname, 'public', 'cache' ),
         observer = oraObserver.observe( boardDir, imageDir, options ),
         port = options.port || 3311;
 
