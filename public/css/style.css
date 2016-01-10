@@ -122,4 +122,9 @@ a:hover {
     text-align: center;
     width: 100px;
     cursor: pointer;
+    opacity: .3;
+}
+
+.thumbnail.selected .original-size:hover {
+    opacity: .8;
 }
