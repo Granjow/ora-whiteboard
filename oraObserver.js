@@ -154,10 +154,16 @@ ObserverEmitter.prototype = {
         }) );
     },
     addWatched: function ( ora, png ) {
-        this._watched.push( new WatchEntry( ora, png ) );
+        var current = this._watched.filter( ( desc ) => desc.ora === ora );
+        current.forEach( ( desc ) => console.log( 'File is being watched already. Resetting if deleted. Was deleted: ', desc.deleted ) );
+        if ( current.length > 0 ) {
+            current.forEach( ( desc ) => desc.deleted = false );
+        } else {
+            this._watched.push( new WatchEntry( ora, png ) );
+        }
     },
     isWatched: function ( ora ) {
-        return this._watched.some( ( desc ) => desc.ora === ora );
+        return this._watched.some( ( desc ) => desc.ora === ora && !desc.deleted );
     },
     hasImage: function ( png ) {
         return this._watched.some( ( desc ) => path.basename( desc.png ) === png );

@@ -4,3 +4,4 @@ Vagrant/.vagrant
 public/cache/*.png
 boards/*.ora
 !boards/Example.ora
+*.tgz
