@@ -1,6 +1,6 @@
-OraWhiteboart provides online-published whiteboards. It reads OpenRaster files and updates them in the web view. 
+OraWhiteboart provides online-published whiteboards. It reads OpenRaster files and updates them on the web page. 
 
-    require( 'ora-whiteboard' ).startOraBoard( 'boards', { port: 3311 } );
+    require( 'ora-whiteboard' ).startOraBoard( __dirname + '/boards', { port: 3311 } );
     
 starts a web server listening on `http://localhost:3311/`. OraWhiteboard watches all `.ora` drawings 
 in the `boards/` directory and updates them on the index page as soon as they change.
