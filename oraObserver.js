@@ -14,11 +14,12 @@ var nextId = (function () {
 
 /**
  * @param {EventEmitter=} emitter
- * @param {{oraPath:string, pngPath: string, sharedFs: boolean}} options
+ * @param {{oraPath:string, pngPath: string, sharedFs: boolean, interval: number=}} options
  * <ul>
  *      <li>sharedFs: Set to true when working with a shared file system
  *      which does not provide modification events.</li>
  *      <li>oraPath, pngPath: Paths to input ORA and output PNG file</li>
+ *      <li>interval: If sharedFs is true, specifies the polling interval to check for changes.</li>
  * </ul>
  * @returns {EventEmitter} Events:
  * <ul>
@@ -29,6 +30,7 @@ var nextId = (function () {
 var startWatcher = function ( options, emitter ) {
 
     var watchEnded = false,
+        watchInterval = options.interval||1000,
         oraPath = options.oraPath,
         pngPath = options.pngPath,
         sharedFs = !!options.sharedFs,
@@ -102,9 +104,15 @@ var startWatcher = function ( options, emitter ) {
             // Use watchFile for shared file systems,
             // and watch for those supporting events
             if ( sharedFs ) {
-                fs.watchFile( oraPath, fileWatcher );
+                fs.watchFile( oraPath, {
+                    persistent: true,
+                    interval: watchInterval
+                }, fileWatcher );
             } else {
-                fs.watch( oraPath, watcher );
+                fs.watch( oraPath, {
+                    persistent: true,
+                    recursive: false
+                }, watcher );
             }
 
             if ( !restarted ) {
@@ -222,10 +230,10 @@ ObserverEmitter.prototype = {
 util.inherits( ObserverEmitter, EventEmitter );
 
 /**
- *
+ * Observes the given directory.
  * @param {string} boardDir
  * @param {string} outDir
- * @param {{sharedFs:boolean}} options
+ * @param {{sharedFs:boolean, interval:number=}} options
  * @returns {ObserverEmitter}
  */
 function observe( boardDir, outDir, options ) {

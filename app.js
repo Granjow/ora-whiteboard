@@ -19,6 +19,7 @@ var pngToNiceName = function ( name ) {
  * <li>Port: Port number where the server will be listening</li>
  * <li>sharedFs: Use the stable fs.watchFile() instead of fs.watch(), e.g. for network shares.
  * fs.watch() does not work on network shares, or on virtual machine shared folders.</li>
+ * <li>interval: If sharedFs is true, specifies the polling interval to check for changes.</li>
  * <li>title: Page title</li>
  * </ul>
  */

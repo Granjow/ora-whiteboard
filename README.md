@@ -29,7 +29,8 @@ Starts a server listening on the given port.
     {
         boardDir: 'boards/',    # Directory path containing ORA files
         port: 3311,             # The server will be listening on this port.
-        sharedFs: true,         # If the watched directory is from a share, set it to true.
+        sharedFs: false,        # If the watched directory is from a share, set it to true.
+        interval: 1000,         # Polling interval to check for modifications, if sharedFs is true
         title: 'ORA Board'      # To set a custom title
     }
 
